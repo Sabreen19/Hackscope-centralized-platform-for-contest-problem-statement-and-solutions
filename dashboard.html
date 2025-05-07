@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | AI-Driven Hackathon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --sidebar: #1a1a2e;
+            --sidebar-hover: #16213e;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-light: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.7);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar);
+            height: 100vh;
+            padding: 30px 20px;
+            position: fixed;
+            transition: all 0.3s ease;
+            z-index: 100;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-left: 10px;
+        }
+        
+        .sidebar-header i {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-right: 15px;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 30px;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--sidebar-hover);
+            color: var(--text-light);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-menu i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn i {
+            margin-right: 12px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+        }
+        
+        .welcome-section {
+            margin-bottom: 40px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .welcome-section h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .welcome-section p {
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+        
+        /* Domain Cards */
+        .section-title {
+            font-size: 1.5rem;
+            margin: 30px 0 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+        }
+        
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .domain-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: backwards;
+        }
+        
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(76, 201, 240, 0.3);
+        }
+        
+        .domain-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .domain-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        
+        .domain-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .domain-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .domain-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .domain-link i {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .domain-link:hover {
+            color: white;
+        }
+        
+        .domain-link:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-robot"></i>
+            <h2>AI Hackathon</h2>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="/graph_analysis"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+            <li><a href="/chatbot"><i class="fas fa-cog"></i> chat</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+        
+    
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="welcome-section">
+            <h2>Welcome back, {{ current_user.username }}!</h2>
+            <p>Ready to tackle today's AI challenges? Here are your available domains.</p>
+        </div>
+        
+        <h3 class="section-title">Your Domains</h3>
+        
+        <div class="domain-grid">
+            {% for domain in domains %}
+            <div class="domain-card" style="animation-delay: {{ loop.index * 0.1 }}s">
+                <div class="domain-icon">
+                    <i class="fas fa-{{ 'microchip' if 'Tech' in domain else 'chart-line' if 'Data' in domain else 'lightbulb' }}"></i>
+                </div>
+                <h3>{{ domain }}</h3>
+                <p>Explore AI-generated problem statements in this domain</p>
+                <a href="{{ url_for('view_statements', domain=domain|replace(' ', '+')) }}" class="domain-link">
+                    View Statements <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+            
+            <div class="domain-card" style="animation-delay: {{ domains|length * 0.1 + 0.1 }}s">
+                <div class="domain-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <h3>Add New Domain</h3>
+                <p>Request access to additional challenge domains</p>
+                <a href="#" class="domain-link">
+                    Request Access <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add dynamic icon selection based on domain name
+        document.addEventListener('DOMContentLoaded', function() {
+            const domainCards = document.querySelectorAll('.domain-card');
+            
+            domainCards.forEach(card => {
+                const domainName = card.querySelector('h3').textContent.toLowerCase();
+                const icon = card.querySelector('.domain-icon i');
+                
+                // Change card accent color based on domain type
+                if (domainName.includes('tech') || domainName.includes('ai')) {
+                    card.style.setProperty('--accent', '#4cc9f0');
+                } else if (domainName.includes('data') || domainName.includes('analytics')) {
+                    card.style.setProperty('--accent', '#f72585');
+                } else if (domainName.includes('business') || domainName.includes('finance')) {
+                    card.style.setProperty('--accent', '#7209b7');
+                } else {
+                    card.style.setProperty('--accent', '#4895ef');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

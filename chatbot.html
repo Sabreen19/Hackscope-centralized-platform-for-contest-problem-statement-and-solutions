@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Help Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4bb543;
+            --warning-color: #f8961e;
+            --error-color: #f94144;
+            --user-message: #4361ee;
+            --bot-message: #f1f2f6;
+            --typing-indicator: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chatbot-container {
+            width: 100%;
+            max-width: 500px;
+            height: 85vh;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chatbot-header .avatar {
+            width: 36px;
+            height: 36px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+        }
+        .chatbot-header h3 { 
+            flex-grow: 1;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .bot-message { 
+            align-self: flex-start; 
+            background-color: var(--bot-message);
+            border-bottom-left-radius: 4px;
+            color: var(--dark-color);
+        }
+        .user-message { 
+            align-self: flex-end; 
+            background-color: var(--user-message); 
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message-time { 
+            font-size: 0.7rem; 
+            opacity: 0.7; 
+            margin-top: 4px; 
+            text-align: right; 
+        }
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .input-area input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        .input-area button {
+            width: 48px;
+            height: 48px;
+            margin-left: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .input-area button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 10px rgba(67, 97, 238, 0.3);
+        }
+        .typing-indicator {
+            display: flex;
+            padding: 10px 16px;
+            background-color: var(--typing-indicator);
+            border-radius: 18px;
+            align-self: flex-start;
+            margin-bottom: 5px;
+            border-bottom-left-radius: 4px;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #6c757d;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .quick-reply {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-reply:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .suggestion-title {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        .help-article {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .help-article:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .help-article h4 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        .help-article p {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <div class="avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3>Website Help Assistant</h3>
+            <div class="status-dot"></div>
+            <span style="font-size: 0.8rem;">Online</span>
+        </div>
+        <div class="chat-area" id="chat-area">
+            <!-- Initial welcome message -->
+            <div class="message bot-message">
+                <div>Hello! I'm your Website Help Assistant. I can help you with:</div>
+                <div class="quick-replies" style="margin-top: 10px;">
+                    <div class="quick-reply" onclick="quickReply('account issues')">Account Issues</div>
+                    <div class="quick-reply" onclick="quickReply('navigation help')">Navigation Help</div>
+                    <div class="quick-reply" onclick="quickReply('payment problems')">Payment Problems</div>
+                    <div class="quick-reply" onclick="quickReply('technical support')">Technical Support</div>
+                </div>
+                <span class="message-time">Just now</span>
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-message" placeholder="Type your question..." autocomplete="off">
+            <button id="send-button" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    <script>
+        // Knowledge base for website help
+        const helpArticles = {
+            'login': {
+                title: "How to Login to Your Account",
+                content: "To login, click the 'Sign In' button in the top right corner. Enter your email and password. If you've forgotten your password, click 'Forgot Password' to reset it."
+            },
+            'password': {
+                title: "Resetting Your Password",
+                content: "Go to the login page and click 'Forgot Password'. Enter your email address and follow the instructions in the email you receive to create a new password."
+            },
+            'navigation': {
+                title: "Website Navigation Guide",
+                content: "Our main menu is at the top of every page. Use the search bar to find specific content. Your dashboard can be accessed by clicking your profile picture."
+            },
+            'payment': {
+                title: "Payment Methods and Issues",
+                content: "We accept Visa, Mastercard, PayPal, and Apple Pay. If your payment fails, check your card details or try an alternative payment method."
+            },
+            'profile': {
+                title: "Updating Your Profile",
+                content: "Click your profile picture > 'Settings' > 'Edit Profile'. Here you can update your personal information, profile picture, and privacy settings."
+            },
+            'privacy': {
+                title: "Privacy Settings Explained",
+                content: "Control what information is visible to others in your Privacy Settings. You can choose who sees your profile, activity, and contact information."
+            },
+            'features': {
+                title: "New Features Guide",
+                content: "Our latest update includes dark mode, keyboard shortcuts, and improved search. Check our blog for detailed tutorials on using these features."
+            }
+        };
+
+        // Initial bot responses database
+        const botResponses = {
+            'greetings': ["Hello! How can I assist you with our website today?", 
+                         "Hi there! What would you like help with on our site?"],
+            'account issues': `Common account issues include:<br><br>
+                            • <strong>Login problems</strong> - Reset your password or check your email<br>
+                            • <strong>Account recovery</strong> - Verify your identity to regain access<br>
+                            • <strong>Profile updates</strong> - Change your personal information<br><br>
+                            What specific issue are you having?`,
+            'navigation help': `Here's how to navigate our site:<br><br>
+                              • <strong>Main menu</strong> - Access all sections from the top<br>
+                              • <strong>Search</strong> - Find anything quickly with our search bar<br>
+                              • <strong>Dashboard</strong> - Your personalized hub for all activities<br><br>
+                              Would you like a guided tour of any specific section?`,
+            'payment problems': `Payment issues solutions:<br><br>
+                               • <strong>Declined cards</strong> - Check funds and card details<br>
+                               • <strong>Failed transactions</strong> - Wait 5 minutes and try again<br>
+                               • <strong>Refunds</strong> - Contact support with your order number<br><br>
+                               What payment method are you using?`,
+            'technical support': `Technical support can help with:<br><br>
+                                • <strong>Browser issues</strong> - Try Chrome or Firefox for best results<br>
+                                • <strong>Mobile app problems</strong> - Update to the latest version<br>
+                                • <strong>Error messages</strong> - Note the exact message for faster help<br><br>
+                                What technical issue are you experiencing?`,
+            'help': "I can help with:<br><br>• Account settings<br>• Site navigation<br>• Payment issues<br>• Technical problems<br>• Privacy questions<br><br>What would you like assistance with?",
+            'default': "I'm not sure I understand. Could you rephrase that or ask about:<br><br>• Login help<br>• Navigation<br>• Payments<br>• Account settings<br><br>I'm here to help!"
+        };
+
+        // Quick reply function
+        function quickReply(text) {
+            document.getElementById('user-message').value = text;
+            sendMessage();
+        }
+
+        // Get current time in HH:MM format
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Create message element
+        function createMessageElement(content, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+            messageDiv.innerHTML = `<div>${content}</div><span class='message-time'>${getCurrentTime()}</span>`;
+            return messageDiv;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const chatArea = document.getElementById('chat-area');
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('typing-indicator');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `<span></span><span></span><span></span>`;
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Get bot response based on user input
+        function getBotResponse(input) {
+            input = input.toLowerCase();
+            
+            // Check for greetings
+            if (input.includes('hello') || input.includes('hi') || input.includes('hey')) {
+                return botResponses.greetings[Math.floor(Math.random() * botResponses.greetings.length)];
+            }
+            
+            // Check for account issues
+            if (input.includes('account') || input.includes('login') || input.includes('sign in') || input.includes('password')) {
+                if (input.includes('login') || input.includes('sign in')) {
+                    showHelpArticle('login');
+                    return "Here's help with logging in:";
+                }
+                if (input.includes('password')) {
+                    showHelpArticle('password');
+                    return "Here's how to reset your password:";
+                }
+                return botResponses['account issues'];
+            }
+            
+            // Check for navigation help
+            if (input.includes('navigate') || input.includes('find') || input.includes('where is') || input.includes('menu')) {
+                showHelpArticle('navigation');
+                return "Here's our navigation guide:";
+            }
+            
+            // Check for payment problems
+            if (input.includes('payment') || input.includes('pay') || input.includes('card') || input.includes('purchase')) {
+                showHelpArticle('payment');
+                return "Here's information about payments:";
+            }
+            
+            // Check for technical support
+            if (input.includes('technical') || input.includes('error') || input.includes('bug') || input.includes('not working')) {
+                return botResponses['technical support'];
+            }
+            
+            // Check for profile help
+            if (input.includes('profile') || input.includes('picture') || input.includes('avatar') || input.includes('settings')) {
+                showHelpArticle('profile');
+                return "Here's how to update your profile:";
+            }
+            
+            // Check for privacy questions
+            if (input.includes('privacy') || input.includes('data') || input.includes('security')) {
+                showHelpArticle('privacy');
+                return "Here's information about privacy settings:";
+            }
+            
+            // Check for feature questions
+            if (input.includes('feature') || input.includes('new') || input.includes('update') || input.includes('dark mode')) {
+                showHelpArticle('features');
+                return "Here's information about our latest features:";
+            }
+            
+            // Check for help requests
+            if (input.includes('help') || input.includes('support') || input.includes('assist')) {
+                return botResponses['help'];
+            }
+            
+            // Default response
+            return botResponses['default'];
+        }
+
+        // Show relevant help article
+        function showHelpArticle(articleKey) {
+            const chatArea = document.getElementById('chat-area');
+            const article = helpArticles[articleKey];
+            
+            const articleDiv = document.createElement('div');
+            articleDiv.classList.add('help-article');
+            articleDiv.innerHTML = `
+                <h4>${article.title}</h4>
+                <p>${article.content}</p>
+            `;
+            
+            // Add click handler to potentially expand the article
+            articleDiv.onclick = function() {
+                // In a real implementation, this might open a full article page
+                alert(`Opening full article: ${article.title}`);
+            };
+            
+            chatArea.appendChild(articleDiv);
+        }
+
+        // Add quick reply options after bot message
+        function addQuickReplies(messageType) {
+            const chatArea = document.getElementById('chat-area');
+            const quickRepliesDiv = document.createElement('div');
+            quickRepliesDiv.classList.add('quick-replies');
+            
+            let replies = [];
+            switch(messageType) {
+                case 'account issues':
+                    replies = ['Login help', 'Password reset', 'Profile update'];
+                    break;
+                case 'navigation help':
+                    replies = ['Main menu', 'Search tips', 'Dashboard'];
+                    break;
+                case 'payment problems':
+                    replies = ['Card issues', 'Refund request', 'Payment methods'];
+                    break;
+                case 'technical support':
+                    replies = ['Browser issues', 'Mobile app', 'Error codes'];
+                    break;
+                default:
+                    replies = ['Account help', 'Navigation', 'Payments', 'Technical'];
+            }
+            
+            replies.forEach(reply => {
+                const replyBtn = document.createElement('div');
+                replyBtn.classList.add('quick-reply');
+                replyBtn.textContent = reply;
+                replyBtn.onclick = function() { quickReply(reply); };
+                quickRepliesDiv.appendChild(replyBtn);
+            });
+            
+            chatArea.appendChild(quickRepliesDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Main function to send message
+        function sendMessage() {
+            const userInput = document.getElementById('user-message');
+            const chatArea = document.getElementById('chat-area');
+            const userMessage = userInput.value.trim();
+            
+            if (!userMessage) return;
+            
+            // Add user message to chat
+            chatArea.appendChild(createMessageElement(userMessage, true));
+            userInput.value = '';
+            chatArea.scrollTop = chatArea.scrollHeight;
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate bot thinking time
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                // Get and display bot response
+                const botResponse = getBotResponse(userMessage);
+                const botMessageElement = createMessageElement(botResponse, false);
+                chatArea.appendChild(botMessageElement);
+                
+                // Add relevant quick replies
+                setTimeout(() => {
+                    if (userMessage.includes('account') || userMessage.includes('login') || userMessage.includes('password')) {
+                        addQuickReplies('account issues');
+                    }
+                    else if (userMessage.includes('navigate') || userMessage.includes('find') || userMessage.includes('menu')) {
+                        addQuickReplies('navigation help');
+                    }
+                    else if (userMessage.includes('payment') || userMessage.includes('pay') || userMessage.includes('card')) {
+                        addQuickReplies('payment problems');
+                    }
+                    else if (userMessage.includes('technical') || userMessage.includes('error') || userMessage.includes('bug')) {
+                        addQuickReplies('technical support');
+                    }
+                    else {
+                        addQuickReplies('default');
+                    }
+                    
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }, 300);
+                
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // Send message on Enter key
+        document.getElementById('user-message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
